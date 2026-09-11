@@ -1,0 +1,8 @@
+.env
+__pycache__/
+*.pyc
+downloads/
+data/
+logs/
+qrcode.png
+.pytest_cache/
