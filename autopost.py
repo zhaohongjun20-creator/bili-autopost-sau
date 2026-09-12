@@ -86,12 +86,17 @@ def run_once(dry_run: bool):
         log.info("已下载: %s (%.1f MB)", raw, os.path.getsize(raw) / 1e6)
         raw_paths.append(raw)
 
-    # ③ 双画面合成 + BGM
+    # ③ 双画面合成 + 调色 + BGM
     bgm_track = pick_bgm()
+    clip_cfg = cfg.get("clip", {})
     final_path = f"{DL_DIR}/{videos[0]['id']}_dual.mp4"
     make_dual_clip(raw_paths[0], videos[0]["duration"],
                    raw_paths[1], videos[1]["duration"],
-                   str(bgm_track), final_path, seg=seg)
+                   str(bgm_track), final_path, seg=seg,
+                   bgm_vol=float(clip_cfg.get("bgm_volume", 1.4)),
+                   contrast=float(clip_cfg.get("contrast", 1.10)),
+                   brightness=float(clip_cfg.get("brightness", 0.04)),
+                   saturation=float(clip_cfg.get("saturation", 1.12)))
     log.info("双画面合成: %s + BGM[%s] → %s (%.1f MB)",
              videos[0]["id"], bgm_track.name, final_path,
              os.path.getsize(final_path) / 1e6)

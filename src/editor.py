@@ -1,7 +1,7 @@
 """双画面蒙太奇合成：两个素材各截一段，统一转码拼接，BGM 循环铺满。
 
 一步 ffmpeg 完成（避免中间文件）：
-  每段: scale+crop 到 1920x1080、fps 30（消除素材间参数差异，concat 才安全）
+  每段: scale+crop 到 1920x1080、fps 30、eq 调色（提对比/亮度/饱和度）
   拼接: concat filter；音频: 纯 BGM（30秒短片原声两段不一致反而突兀）
 """
 import subprocess
@@ -16,11 +16,14 @@ def _seg_start(duration: int, seg: int) -> int:
 
 def make_dual_clip(raw_a: str, dur_a: int, raw_b: str, dur_b: int,
                    bgm_path: str, out_path: str, seg: int = 15,
-                   bgm_vol: float = 1.0) -> str:
-    """raw_a/raw_b 各截 seg 秒 → 拼接 → 铺 BGM，输出约 2*seg 秒成片。"""
+                   bgm_vol: float = 1.4,
+                   contrast: float = 1.10, brightness: float = 0.04,
+                   saturation: float = 1.12) -> str:
+    """raw_a/raw_b 各截 seg 秒 → 调色拼接 → 铺 BGM，输出约 2*seg 秒成片。"""
     ffmpeg = imageio_ffmpeg.get_ffmpeg_exe()
     vf = (f"scale={W}:{H}:force_original_aspect_ratio=increase,"
-          f"crop={W}:{H},fps={FPS},setsar=1")
+          f"crop={W}:{H},fps={FPS},setsar=1,"
+          f"eq=contrast={contrast}:brightness={brightness}:saturation={saturation}")
     fc = (f"[0:v]{vf}[v0];[1:v]{vf}[v1];"
           f"[v0][v1]concat=n=2:v=1:a=0[vout];"
           f"[2:a]volume={bgm_vol}[aout]")

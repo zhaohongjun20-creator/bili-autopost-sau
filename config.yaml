@@ -14,6 +14,10 @@ video_filter:
 
 clip:
   per_segment: 15          # 每个画面截取秒数（成片 = 2 × per_segment）
+  bgm_volume: 1.4          # BGM 音量倍率（宿命感拉满但不爆音）
+  contrast: 1.10           # 对比度（1.0=原图）
+  brightness: 0.04         # 亮度（0=原图，0.04 适度提亮）
+  saturation: 1.12         # 饱和度（1.0=原图）
 
 download:
   max_height: 1080         # 取 ≤1080p 的最大画质即可
