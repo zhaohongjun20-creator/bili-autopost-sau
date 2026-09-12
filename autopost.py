@@ -72,11 +72,18 @@ def run_once(dry_run: bool):
 
     # ② download
     link = pick_video_file(video["video_files"], cfg["download"]["max_height"])
-    video_path = f"{DL_DIR}/{video['id']}.mp4"
-    if not os.path.exists(video_path):
+    raw_path = f"{DL_DIR}/{video['id']}.mp4"
+    if not os.path.exists(raw_path):
         log.info("下载中: %s", link)
-        download(link, video_path)
-    log.info("已下载: %s (%.1f MB)", video_path, os.path.getsize(video_path) / 1e6)
+        download(link, raw_path)
+    log.info("已下载: %s (%.1f MB)", raw_path, os.path.getsize(raw_path) / 1e6)
+
+    # ②.5 BGM 混音：原声压低保留氛围，BGM 循环铺满
+    from src.bgm import pick_bgm, mix_bgm, BGM_CREDIT
+    bgm_track = pick_bgm()
+    video_path = f"{DL_DIR}/{video['id']}_bgm.mp4"
+    mix_bgm(raw_path, str(bgm_track), video_path)
+    log.info("BGM 混音完成: %s → %s", bgm_track.name, video_path)
 
     # ③ metadata
     copy = gen_copy(
@@ -87,6 +94,8 @@ def run_once(dry_run: bool):
         temperature=cfg["copywriter"]["temperature"],
     )
     copy["tags"] = list(dict.fromkeys(copy["tags"] + cfg["bilibili"]["tags_extra"]))[:10]
+    copy["desc"] += (f"\n素材来源：Pexels（免费商用授权），原作者：{video['user']['name']}"
+                     f"\n{BGM_CREDIT}")
     log.info("标题: %s", copy["title"])
 
     # ④ cover
@@ -111,6 +120,7 @@ def run_once(dry_run: bool):
         )
         store.mark_published(video["id"], "biliup-ok")
         log.info("投稿成功。biliup 输出:\n%s", out)
+        os.remove(raw_path)
         os.remove(video_path)
         os.remove(cover_path)
     except Exception as e:

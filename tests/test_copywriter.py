@@ -15,5 +15,5 @@ def test_parse_llm_json_garbage_returns_none():
 def test_fallback_template():
     meta = {"keyword": "ocean waves", "author": "Cameraman", "duration": 120}
     out = cw.fallback_copywriting(meta)
-    assert "Pexels" in out["desc"] and "Cameraman" in out["desc"]
     assert isinstance(out["tags"], list) and out["title"]
+    assert "来源" in out["desc"]  # 声明由入口统一拼接，fallback 不再自带

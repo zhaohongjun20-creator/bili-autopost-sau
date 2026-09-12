@@ -3,14 +3,19 @@ import json, re, requests
 
 ZHIPU_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
 
-PROMPT = """你是B站视频运营。根据以下素材信息生成中文投稿文案，只输出 JSON，不要输出任何其他内容。
+PROMPT = """你是B站视频运营兼文案诗人，账号定位是"风景里的恋爱心事"。根据素材信息生成投稿文案，只输出 JSON，不要输出任何其他内容。
 素材主题关键词：{keyword}
 原作者：{author}
 时长：{duration}秒
 原始链接：{orig_title}
 
+要求：
+- title：中文标题，富有文学色彩，带有恋爱/浪漫暗示——借景抒情，把风景写成恋爱心境（参考风格："海浪替我说了那句没说出口的话""晚霞是天空写给大地的情书"），40字以内，一句即成立，不堆砌辞藻、不用感叹号
+- desc：2-3句诗意中文短句，呼应标题的浪漫意境，像写给某个人的话
+- tags：5个标签，其中1个为情绪向标签（如"意难平""心动"）
+
 输出格式：
-{{"title": "80字内吸引人的中文标题", "desc": "100字内中文简介，结尾必须自然带上一句：素材来源：Pexels（免费商用授权），原作者：{author}", "tags": ["标签1","标签2","标签3","标签4","标签5"]}}"""
+{{"title": "标题", "desc": "简介（结尾不要带来源声明，系统会自动附加）", "tags": ["标签1","标签2","标签3","标签4","标签5"]}}"""
 
 def _parse_llm_json(raw: str):
     """容错解析：裸 JSON / markdown 围栏 / 前后杂质。"""
@@ -33,10 +38,9 @@ def _parse_llm_json(raw: str):
 def fallback_copywriting(meta: dict) -> dict:
     kw = meta["keyword"].title()
     return {
-        "title": f"{kw}｜高清治愈风景，放松一下",
-        "desc": (f"一段{meta['duration']}秒的{meta['keyword']}素材。\n"
-                 f"素材来源：Pexels（免费商用授权），原作者：{meta['author']}"),
-        "tags": ["风景", "治愈", "素材", "自然", "放松"],
+        "title": f"把{kw}的风，寄给你",
+        "desc": f"一段{meta['duration']}秒的{meta['keyword']}，想讲给你听。来源声明由系统自动附加。",
+        "tags": ["风景", "治愈", "自然", "心动", "浪漫"],
     }
 
 def generate(api_key: str, meta: dict, model: str = "glm-4-flash",
