@@ -3,10 +3,9 @@ import json, re, requests
 
 ZHIPU_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions"
 
-PROMPT = """你是B站视频运营兼文案诗人，账号定位是"风景里的恋爱心事"。根据素材信息生成投稿文案，只输出 JSON，不要输出任何其他内容。
+PROMPT = """你是B站视频运营兼文案诗人，账号定位是"风景里的恋爱心事"。视频是由两个不同画面组成的{duration}秒风景短片，根据素材信息生成投稿文案，只输出 JSON，不要输出任何其他内容。
 素材主题关键词：{keyword}
-原作者：{author}
-时长：{duration}秒
+原作者：{authors}
 原始链接：{orig_title}
 
 要求：
@@ -45,8 +44,9 @@ def fallback_copywriting(meta: dict) -> dict:
 
 def generate(api_key: str, meta: dict, model: str = "glm-4-flash",
              temperature: float = 0.8) -> dict:
+    authors = meta.get("authors") or [meta.get("author", "未知")]
     prompt = PROMPT.format(
-        keyword=meta["keyword"], author=meta["author"],
+        keyword=meta["keyword"], authors="、".join(map(str, authors)),
         duration=meta["duration"], orig_title=meta.get("orig_title", ""),
     )
     for _ in range(2):

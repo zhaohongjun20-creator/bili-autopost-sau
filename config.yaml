@@ -5,11 +5,15 @@ keywords:
   - "forest waterfall"
   - "starry sky timelapse"
   - "aurora"
+  - "sunset beach"
 
 video_filter:
   orientation: landscape   # 仅横屏
-  min_duration: 60         # 秒
-  max_duration: 180
+  min_duration: 20         # 秒（只截片段，≥每段长度即可）
+  max_duration: 300        # 控制下载文件大小
+
+clip:
+  per_segment: 15          # 每个画面截取秒数（成片 = 2 × per_segment）
 
 download:
   max_height: 1080         # 取 ≤1080p 的最大画质即可

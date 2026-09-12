@@ -1,4 +1,4 @@
-from src.fetcher import pick_video, pick_video_file
+from src.fetcher import pick_videos, pick_video_file
 
 FAKE_API_RESULT = {
     "videos": [
@@ -11,13 +11,13 @@ FAKE_API_RESULT = {
     ]
 }
 
-def test_pick_video_prefers_landscape_duration():
-    v = pick_video(FAKE_API_RESULT, known_ids=set(), min_dur=60, max_dur=180)
-    assert v["id"] == 3  # 1竖屏被滤，2太短被滤，3符合
+def test_pick_videos_prefers_landscape_duration():
+    vs = pick_videos(FAKE_API_RESULT, known_ids=set(), min_dur=60, max_dur=180, count=2)
+    assert [v["id"] for v in vs] == [3]  # 1竖屏被滤，2太短被滤，只有3符合
 
-def test_pick_video_skips_known():
-    v = pick_video(FAKE_API_RESULT, known_ids={3}, min_dur=60, max_dur=180)
-    assert v is None  # 全被去重
+def test_pick_videos_skips_known():
+    vs = pick_videos(FAKE_API_RESULT, known_ids={3}, min_dur=60, max_dur=180, count=2)
+    assert vs == []  # 全被去重
 
 def test_pick_video_file():
     files = [
