@@ -1,4 +1,4 @@
-# bili-autopost-sau
+bibli视频自动发布
 
 自动收集 Pexels 免费素材视频 → GLM 生成文案 → 经 **social-auto-upload 的 biliup 运行时**投稿到哔哩哔哩。
 
