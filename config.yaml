@@ -1,11 +1,30 @@
-# 每次运行随机取一个关键词搜索 Pexels
+# 每次运行随机取一个关键词搜索 Pexels（每天自然轮换，题材均衡）
 keywords:
+  # 海
   - "ocean waves"
+  - "sunset beach"
+  - "lighthouse coast"
+  - "tropical island"
+  # 山与地貌
   - "mountain sunrise"
+  - "snow mountain"
+  - "canyon cliffs"
+  - "desert dunes"
+  - "glacier ice"
+  - "rice terraces"
+  # 森林与植物
   - "forest waterfall"
+  - "autumn forest leaves"
+  - "cherry blossom spring"
+  - "lavender field"
+  - "rainforest mist"
+  - "green field meadow"
+  # 水与天空
+  - "calm lake reflection"
+  - "mountain river stream"
   - "starry sky timelapse"
   - "aurora"
-  - "sunset beach"
+  - "clouds timelapse"
 
 video_filter:
   orientation: landscape   # 仅横屏
