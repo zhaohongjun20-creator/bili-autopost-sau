@@ -1,35 +1,36 @@
-# 每次运行随机取一个关键词搜索 Pexels（每天自然轮换，题材均衡）
+# 每次运行随机取一个关键词搜索 Pexels（偏向航拍/延时等带运镜的素材）
 keywords:
   # 海
-  - "ocean waves"
-  - "sunset beach"
-  - "lighthouse coast"
-  - "tropical island"
+  - "flying over ocean waves"
+  - "drone sunset beach"
+  - "lighthouse aerial view"
+  - "drone tropical island"
   # 山与地貌
-  - "mountain sunrise"
-  - "snow mountain"
-  - "canyon cliffs"
-  - "desert dunes"
-  - "glacier ice"
-  - "rice terraces"
+  - "aerial mountain sunrise"
+  - "drone snow mountain"
+  - "canyon drone flight"
+  - "desert dunes aerial"
+  - "glacier aerial timelapse"
+  - "rice terraces aerial"
   # 森林与植物
-  - "forest waterfall"
-  - "autumn forest leaves"
-  - "cherry blossom spring"
-  - "lavender field"
-  - "rainforest mist"
-  - "green field meadow"
+  - "waterfall aerial shot"
+  - "autumn forest drone flight"
+  - "cherry blossom spring wind"
+  - "lavender field drone"
+  - "rainforest aerial mist"
+  - "flying over green meadow"
   # 水与天空
-  - "calm lake reflection"
-  - "mountain river stream"
+  - "drone calm lake"
+  - "mountain river aerial"
   - "starry sky timelapse"
-  - "aurora"
-  - "clouds timelapse"
+  - "aurora timelapse"
+  - "clouds timelapse sky"
 
 video_filter:
   orientation: landscape   # 仅横屏
   min_duration: 20         # 秒（只截片段，≥每段长度即可）
   max_duration: 300        # 控制下载文件大小
+  min_motion: 0.8          # 机位运动分阈值（像素/帧），低于则判静态镜头淘汰
 
 clip:
   per_segment: 15          # 每个画面截取秒数（成片 = 2 × per_segment）

@@ -38,8 +38,8 @@ def load_config():
         return yaml.safe_load(f)
 
 
-def pick_material(log, cfg, store, count: int):
-    """多关键词自动降级，选 count 个未用过的横屏素材。"""
+def pick_material(log, cfg, store, pool_size: int):
+    """多关键词自动降级，取 pool_size 个候选素材（下载后还要过运动检测）。"""
     vf = cfg["video_filter"]
     keywords = cfg["keywords"][:]
     random.shuffle(keywords)
@@ -52,10 +52,43 @@ def pick_material(log, cfg, store, count: int):
             continue
         videos = pick_videos(res, known_ids=store.known_ids(),
                              min_dur=vf["min_duration"], max_dur=vf["max_duration"],
-                             count=count)
-        if len(videos) == count:
+                             count=pool_size)
+        if len(videos) >= 2:
             return kw, videos
     return None, []
+
+
+def gather_dynamic_pair(log, cfg, store):
+    """下载候选并检测机位运动，凑齐 2 个动态素材；静态素材即删即弃。"""
+    from src.motion import camera_motion_score
+    threshold = float(cfg.get("video_filter", {}).get("min_motion", 0.8))
+    keyword, cands = pick_material(log, cfg, store, pool_size=5)
+    if not cands:
+        return None, []
+    picked = []
+    for v in cands:
+        if len(picked) == 2:
+            break
+        link = pick_video_file(v["video_files"], cfg["download"]["max_height"])
+        raw = f"{DL_DIR}/{v['id']}.mp4"
+        if not os.path.exists(raw):
+            log.info("下载中: %s", link)
+            try:
+                download(link, raw)
+            except Exception as e:
+                log.warning("下载 %s 失败: %r，跳过", v["id"], e)
+                continue
+        score = camera_motion_score(raw)
+        if score < threshold:
+            log.info("静态镜头淘汰 pexels_id=%s (运动分%.2f < %.2f)",
+                     v["id"], score, threshold)
+            os.remove(raw)
+            store.record_fetched(v["id"], keyword, v["url"])  # 记录防重复选用
+            store.mark_failed(v["id"], "static camera rejected")
+            continue
+        log.info("动态素材通过 pexels_id=%s 运动分=%.2f", v["id"], score)
+        picked.append((v, raw))
+    return keyword, picked
 
 
 def run_once(dry_run: bool):
@@ -65,26 +98,17 @@ def run_once(dry_run: bool):
     store = Store(f"{DATA_DIR}/published.db")
     seg = int(cfg.get("clip", {}).get("per_segment", 15))
 
-    # ① fetch —— 两个不同画面
-    keyword, videos = pick_material(log, cfg, store, count=2)
-    if not videos:
-        log.warning("所有关键词凑不齐 %d 个新素材，本次跳过", 2)
+    # ① fetch + ② download + 运动检测 —— 凑齐两个动态画面
+    keyword, picked = gather_dynamic_pair(log, cfg, store)
+    if len(picked) < 2:
+        log.warning("候选池凑不齐 2 个动态素材，本次跳过")
         return
+    videos = [v for v, _ in picked]
+    raw_paths = [p for _, p in picked]
     for v in videos:
         store.record_fetched(v["id"], keyword, v["url"])
         log.info("选中素材 pexels_id=%s 时长=%ss 作者=%s",
                  v["id"], v["duration"], v["user"]["name"])
-
-    # ② download
-    raw_paths = []
-    for v in videos:
-        link = pick_video_file(v["video_files"], cfg["download"]["max_height"])
-        raw = f"{DL_DIR}/{v['id']}.mp4"
-        if not os.path.exists(raw):
-            log.info("下载中: %s", link)
-            download(link, raw)
-        log.info("已下载: %s (%.1f MB)", raw, os.path.getsize(raw) / 1e6)
-        raw_paths.append(raw)
 
     # ③ 双画面合成 + 调色 + BGM
     bgm_track = pick_bgm()
